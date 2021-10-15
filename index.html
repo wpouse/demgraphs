@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>demgraphs</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const data = {
+  datasets: [{
+    label: '',
+    backgroundColor: 'rgb(255, 99, 132)',
+    borderColor: 'rgb(255, 99, 132)',
+    data: [],
+  }]
+};
+
+function show() {
+	let query = new URLSearchParams();
+	selector = document.getElementsByName("selector")[0].value;
+	if (selector.length > 0)
+		query.append('selector', selector);
+	max_points = document.getElementsByName("max_points")[0].value;
+	if (max_points > 0)
+		query.append('max_points', max_points);
+	let request = new Request('/data?' + query.toString());
+	let start = performance.now()
+	fetch(request).then(response => {
+		if (response.status === 200) {
+			return response.json();
+		} else {
+			throw new Error("non 200 response: " + response.status);
+		}
+	}).then(response => {
+		let end = performance.now()
+		document.getElementById("response").innerText = "Loaded " + response.length + " results in " + (end - start)+ " ms";
+		data.datasets[0].data.length = 0;
+		for (var i = 0; i < response.length; i++) {
+			data.datasets[0].data.push({x: response[i][2], y: response[i][1]})
+		}
+		data.datasets[0].label = selector;
+		chart.update('none');
+	}).catch(error => {
+		console.error(error);
+	});
+}
+</script>
+<body>
+<form>
+<label>Selector <input name="selector"></label><br>
+<label>Start date <input name="start_date" type="date" disabled></label> <label>time <input name="start_time" type="time" disabled></label><br>
+<label>End date <input name="end_date" type="date" disabled></label> <label>time <input name="end_time" type="time" disabled></label><br>
+<label>Max points <input name="max_points" type="number" value="1000"></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
+<input type="button" value="Show" onClick="show();">
+<hr>
+<span id="response"></span>
+<canvas id="chart"></canvas>
+<script>
+const config = {
+  type: 'scatter',
+  data: data,
+  options: {}
+};
+
+var chart = new Chart(
+  document.getElementById('chart'),
+  config
+);
+</script>
+
+</form>
