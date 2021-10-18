@@ -3,6 +3,7 @@
 import argparse
 import random
 import requests
+import time
 
 
 if __name__ == '__main__':
@@ -10,5 +11,7 @@ if __name__ == '__main__':
     parser.add_argument('--port', '-p', type=int)
     args = parser.parse_args()
 
+    now = time.time()
     for _ in range(1000):
-        requests.post(f'http://localhost:{args.port}/', data=f'abc {random.random()} {int(random.random() * 1000 + 1000)}\n')
+        rtime = int(random.random() * now * 1000)
+        requests.post(f'http://localhost:{args.port}/', data=f'abc {random.random()} {rtime}\n')

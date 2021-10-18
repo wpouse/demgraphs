@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <title>demgraphs</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/date-fns@2.25.0/index.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script>
 const data = {
   datasets: [{
@@ -56,9 +58,15 @@ function show() {
 <canvas id="chart"></canvas>
 <script>
 const config = {
-  type: 'scatter',
-  data: data,
-  options: {}
+	type: 'scatter',
+	data: data,
+	options: {
+		scales: {
+			x: {
+				type: "time"
+			}
+		}
+	}
 };
 
 var chart = new Chart(
