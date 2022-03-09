@@ -7,7 +7,7 @@ import sqlite3
 import urllib.parse
 import time
 import datetime
-import numpy as np
+
 
 def consql(db):
     con = sqlite3.connect(db)
@@ -73,11 +73,6 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
             self.send_response(200)
             self.send_header('Content-Type', 'text/json')
             self.end_headers()
-            
-            #Block of code for limiting the number of points after all the data is pulled, but this will be slow for large data
-            #idx = np.round(np.linspace(0, len(rows) - 1, limit)).astype(int)
-            #if len(rows) > 0:
-            #    rows = np.array(rows, dtype = 'object')[np.unique(idx)].tolist()
                 
             self.wfile.write(json.dumps(list(rows)).encode())
         elif self.path == '/' or self.path == '/index.html':
