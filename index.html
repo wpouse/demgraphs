@@ -24,6 +24,15 @@ function show() {
 	max_points = document.getElementsByName("max_points")[0].value;
 	if (max_points > 0)
 		query.append('max_points', max_points);
+	start_date = document.getElementsByName("start_date")[0].value;
+	end_date = document.getElementsByName("end_date")[0].value;
+	<!-- Currently no checking that start date is less than end date. Have to consider case where one of start date or end_date isn't selected -->
+	query.append('start_date', start_date);
+	query.append('end_date', end_date);
+	start_time = document.getElementsByName("start_time")[0].value;
+	end_time = document.getElementsByName("end_time")[0].value;
+	query.append('start_time', start_time);
+	query.append('end_time', end_time);
 	let request = new Request('/data?' + query.toString());
 	let start = performance.now()
 	fetch(request).then(response => {
@@ -49,8 +58,8 @@ function show() {
 <body>
 <form>
 <label>Selector <input name="selector"></label><br>
-<label>Start date <input name="start_date" type="date" disabled></label> <label>time <input name="start_time" type="time" disabled></label><br>
-<label>End date <input name="end_date" type="date" disabled></label> <label>time <input name="end_time" type="time" disabled></label><br>
+<label>Start date <input name="start_date" type="date" ></label> <label>time <input name="start_time" type="time" ></label><br>
+<label>End date <input name="end_date" type="date"></label> <label>time <input name="end_time" type="time" ></label><br>
 <label>Max points <input name="max_points" type="number" value="1000"></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
 <input type="button" value="Show" onClick="show();">
 <hr>
