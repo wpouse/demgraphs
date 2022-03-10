@@ -57,7 +57,7 @@ function show() {
 </script>
 <body>
 <form>
-<label>Selector <input name="selector"></label><br>
+<label>Dataset <select id="selectorID" name="selector"><option></option></select></label><br>
 <label>Start date <input name="start_date" type="date" ></label> <label>time <input name="start_time" type="time" ></label><br>
 <label>End date <input name="end_date" type="date"></label> <label>time <input name="end_time" type="time" ></label><br>
 <label>Max points <input name="max_points" type="number" value="1000"></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
@@ -84,4 +84,26 @@ var chart = new Chart(
 );
 </script>
 
+<script>
+var select = document.getElementById("selectorID"); 
+let request = new Request('/selectors?');
+fetch(request).then(response => {
+		if (response.status === 200) {
+			return response.json();
+		} else {
+			throw new Error("non 200 response: " + response.status);
+		}
+	}).then(response => {
+		for (var i = 0; i < response.length; i++) {
+			var opt = response[i][0];
+			var el = document.createElement("option");
+			el.text = opt;
+			el.value = opt;
+
+			select.add(el);
+			}
+	}).catch(error => {
+		console.error(error);
+	});
+</script>
 </form>
