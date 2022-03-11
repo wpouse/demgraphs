@@ -94,14 +94,31 @@ fetch(request).then(response => {
 			throw new Error("non 200 response: " + response.status);
 		}
 	}).then(response => {
+		var name_groups = {};
 		for (var i = 0; i < response.length; i++) {
-			var opt = response[i][0];
-			var el = document.createElement("option");
-			el.text = opt;
-			el.value = opt;
-
-			select.add(el);
+			var data_name = response[i][0];
+			var name_group= data_name.substring(0, data_name.indexOf('.'));
+			var name_element = data_name.substring(data_name.indexOf('.')+1);
+			if (name_group=='') {
+				name_group = 'Other';
 			}
+			if (!(name_group in name_groups)) {
+				var el_group = document.createElement("OPTGROUP");
+				el_group.label = name_group;
+				name_groups[name_group] = el_group;
+			}
+
+		  
+			var el = document.createElement("option");
+			el.text = name_element;
+			el.value = data_name;
+			name_groups[name_group].appendChild(el)
+		 
+		}
+		
+		for (let key in name_groups) {
+			select.add(name_groups[key]);
+		}
 	}).catch(error => {
 		console.error(error);
 	});
