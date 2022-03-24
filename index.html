@@ -33,7 +33,7 @@ function show() {
 	end_time = document.getElementsByName("end_time")[0].value;
 	query.append('start_time', start_time);
 	query.append('end_time', end_time);
-	let request = new Request('/data?' + query.toString());
+	let request = new Request('data?' + query.toString());
 	let start = performance.now()
 	fetch(request).then(response => {
 		if (response.status === 200) {
@@ -86,7 +86,7 @@ var chart = new Chart(
 
 <script>
 var select = document.getElementById("selectorID"); 
-let request = new Request('/selectors?');
+let request = new Request('selectors?');
 fetch(request).then(response => {
 		if (response.status === 200) {
 			return response.json();
