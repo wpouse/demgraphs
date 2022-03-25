@@ -8,6 +8,7 @@ import urllib.parse
 import time
 import datetime
 
+
 def consql(db):
     con = sqlite3.connect(db)
     cur = con.cursor()
@@ -28,14 +29,13 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
             
             #First get the number of rows to make sure we don't exceed limit number of data points. 
             #The LIMIT query just limits the query to the past LIMIT number of rows instead of equally spaced between the two time stamps
-            query = 'SELECT COUNT(*) FROM data WHERE'
+            #query = 'SELECT COUNT(*) FROM data WHERE'
+            query = 'SELECT * FROM data WHERE'
             selector = None
             if 'selector' in q:
                 selector = q['selector'][0].strip()
                 query += ' name=:selector AND'
-            else:
-                query 
-                
+            
             start_date = int(1000*datetime.datetime.strptime('1980-01-01', "%Y-%m-%d").timestamp())
             start_date = '1980-01-01'
             if 'start_date' in q:
@@ -61,20 +61,11 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
             
             self.server.cur.execute(query, {'t1': t1, 't0': t0, 'selector': selector})
             rows = self.server.cur.fetchall()
-            num_rows = rows[0][0]
-            
+            num_rows = len(rows)
             skip_row_num = int(num_rows // limit) #Floor to nearest integer
             if skip_row_num < 2:
                 skip_row_num = 1
-
-            if 'selector' in q:
-                query = "SELECT name, value, time FROM ( SELECT ROW_NUMBER() OVER (PARTITION BY 1) RowNum, * FROM ( SELECT * FROM data WHERE name=:selector AND time >= :t0 AND time <= :t1 ORDER BY time DESC) ) AS A WHERE (A.RowNum % :skip_row_num) = 0"
-                self.server.cur.execute(query, {'t1': t1, 't0': t0, 'selector': selector, 'skip_row_num': skip_row_num})
-            else:
-                query = "SELECT name, value, time FROM ( SELECT ROW_NUMBER() OVER (PARTITION BY 1) RowNum, * FROM ( SELECT * FROM data WHERE time >= :t0 AND time <= :t1 ORDER BY time DESC) ) AS A WHERE (A.RowNum % :skip_row_num) = 0"
-                self.server.cur.execute(query, {'t1': t1, 't0': t0, 'skip_row_num': skip_row_num})
-            rows = self.server.cur.fetchall()
-            
+            rows = rows[::skip_row_num]
             self.send_response(200)
             self.send_header('Content-Type', 'text/json')
             self.end_headers()
