@@ -13,5 +13,5 @@ if __name__ == '__main__':
 
     now = time.time()
     for _ in range(1000):
-        rtime = int(random.random() * now * 1000)
+        rtime = int(random.random() * now)
         requests.post(f'http://localhost:{args.port}/', data=f'abc {random.random()} {rtime}\n')

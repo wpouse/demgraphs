@@ -36,16 +36,14 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
                 selector = q['selector'][0].strip()
                 query += ' name=:selector AND'
             
-            start_date = int(1000*datetime.datetime.strptime('1980-01-01', "%Y-%m-%d").timestamp())
-            start_date = '1980-01-01'
             if 'start_date' in q:
                 start_date = q['start_date'][0]
                 
-            start_time = '00:00'
-            if 'start_time' in q:
-                start_time = q['start_time'][0]
-            t0 = int(1000*datetime.datetime.strptime(start_date + ' ' + start_time, "%Y-%m-%d %H:%M").timestamp())
-            query += ' time >= :t0'
+                start_time = '00:00'
+                if 'start_time' in q:
+                    start_time = q['start_time'][0]
+                t0 = int(datetime.datetime.strptime(start_date + ' ' + start_time, "%Y-%m-%d %H:%M").timestamp())
+                query += ' time >= :t0 AND'
             
             end_date = datetime.date.today().strftime("%Y-%m-%d")
             if 'end_date' in q:
@@ -54,12 +52,15 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
             end_time = datetime.datetime.now().strftime("%H:%M")
             if 'end_time' in q:
                 end_time = q['end_time'][0]
-            t1 = int(1000*datetime.datetime.strptime(end_date + ' ' + end_time, "%Y-%m-%d %H:%M").timestamp())
-            query += ' AND time <= :t1'
+            t1 = int(datetime.datetime.strptime(end_date + ' ' + end_time, "%Y-%m-%d %H:%M").timestamp())
+            query += ' time <= :t1'
             
             query += ' ORDER BY time DESC'
             
-            self.server.cur.execute(query, {'t1': t1, 't0': t0, 'selector': selector})
+            if 'start_date' in q:
+                self.server.cur.execute(query, {'t1': t1, 't0': t0, 'selector': selector})
+            else:
+                self.server.cur.execute(query, {'t1': t1, 'selector': selector})
             rows = self.server.cur.fetchall()
             num_rows = len(rows)
             skip_row_num = int(num_rows // limit) #Floor to nearest integer

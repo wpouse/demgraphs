@@ -46,7 +46,7 @@ function show() {
 		document.getElementById("response").innerText = "Loaded " + response.length + " results in " + (end - start)+ " ms";
 		data.datasets[0].data.length = 0;
 		for (var i = 0; i < response.length; i++) {
-			data.datasets[0].data.push({x: response[i][2], y: response[i][1]})
+			data.datasets[0].data.push({x: 1000*response[i][2], y: response[i][1]})
 		}
 		data.datasets[0].label = selector;
 		chart.update('none');
