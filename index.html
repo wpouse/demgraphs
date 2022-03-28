@@ -6,6 +6,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/date-fns@2.25.0/index.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script>
 const data = {
   datasets: [{
@@ -49,6 +52,17 @@ function show() {
 			data.datasets[0].data.push({x: 1000*response[i][2], y: response[i][1]})
 		}
 		data.datasets[0].label = selector;
+		if (document.getElementById("Line").checked) {
+			var plotType = 'line';
+		} else {
+				var plotType = 'scatter';
+		}
+		if (chart.options.type != plotType) {
+			var temp = jQuery.extend(true, {}, config); // Chart type doesn't update dynamically, so must copy configuration and create new chart
+			temp.type = plotType; 
+			chart.destroy()
+			chart = new Chart(document.getElementById('chart'), temp);
+		}
 		chart.update('none');
 	}).catch(error => {
 		console.error(error);
@@ -61,6 +75,7 @@ function show() {
 <label>Start date <input name="start_date" type="date" ></label> <label>time <input name="start_time" type="time" ></label><br>
 <label>End date <input name="end_date" type="date"></label> <label>time <input name="end_time" type="time" ></label><br>
 <label>Max points <input name="max_points" type="number" value="1000"></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
+<label>Line plot? <input type="checkbox" id="Line" name="Line" value="Line"></label><br>
 <input type="button" value="Show" onClick="show();">
 <hr>
 <span id="response"></span>
@@ -74,7 +89,28 @@ const config = {
 			x: {
 				type: "time"
 			}
-		}
+		},
+		animation: {
+			duration: 0
+		},
+		plugins: {
+		  zoom: {
+			zoom: {
+			  wheel: {
+				enabled: true,
+				speed: 0.05,
+			  },
+			  pinch: {
+				enabled: true
+			  },
+			  mode: 'xy',
+			},
+			pan: {
+				enabled: true,
+				mode: 'xy',
+			}
+		  }
+	  }
 	}
 };
 
