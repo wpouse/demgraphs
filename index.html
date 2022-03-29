@@ -162,43 +162,24 @@ function getSelectors() {
 			for (let key in name_groups) {
 				select.add(name_groups[key]);
 			}
+			const url = new URL(window.location.href);
+			if (url.searchParams.get('display')) {
+				for(pair of url.searchParams.entries()) {
+					element = document.getElementById(pair[0]);
+					if (typeof(element) != 'undefined' && element != null) {
+					  document.getElementById(pair[0]).value = pair[1];
+					}
+				}
+				show();
+			}
 		}).catch(error => {
 			console.error(error);
 		});
 }
 </script>
 <script>
-function changeSelector() {
-	document.getElementById("selector").value = "dash.cpu_temperature";
-}
-</script>
-<script>
 getSelectors();
-const url = new URL(window.location.href);
-if (url.searchParams.get('display')) {
-	for(pair of url.searchParams.entries()) {
-		element = document.getElementById(pair[0]);
-		if (typeof(element) != 'undefined' && element != null) {
-		  console.log(pair);
-		  document.getElementById(pair[0]).value = pair[1];
-		  console.log(document.getElementById("selector").value);
-		  document.getElementById("selector").value = "dash.cpu_temperature";
-		  changeSelector();
-		}
-	}
-	console.log(document.getElementById("selector"));
-	show();
-}
-
 document.getElementById('permalink').value = window.location.href; 
-</script>
-<script>
-(function() {
-   // your page initialization code here
-   // the DOM will be available here
-	changeSelector();
-	console.log('here');
-})();
 </script>
 
 </form>
