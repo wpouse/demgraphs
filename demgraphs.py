@@ -20,7 +20,8 @@ def consql(db):
 
 class ServerHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path.startswith('/data'):
+        url_parsed = urllib.parse.urlparse(self.path)
+        if url_parsed.path == '/data':
             q = urllib.parse.parse_qs(urllib.parse.urlparse(self.path).query)
             
             limit = 10000
@@ -74,17 +75,16 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
                 
             self.wfile.write(json.dumps(list(rows)).encode())
             
-        elif self.path.startswith('/selectors'):
+        elif url_parsed.path == '/selectors':
             query = "SELECT DISTINCT name FROM data"
             self.server.cur.execute(query)
             rows = self.server.cur.fetchall()
-            print('here')
             self.send_response(200)
             self.send_header('Content-Type', 'text/json')
             self.end_headers()
             
             self.wfile.write(json.dumps(list(rows)).encode())
-        elif self.path == '/' or self.path == '/index.html':
+        elif url_parsed.path == '/' or url_parsed.path == '/index.html':
             self.send_response(200)
             self.end_headers()
             self.wfile.write(self.server.index)

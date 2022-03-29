@@ -64,6 +64,7 @@ function show() {
 			chart = new Chart(document.getElementById('chart'), temp);
 		}
 		chart.update('none');
+		document.getElementById('permalink').value = location.protocol+'//'+location.host+location.pathname + '?display=true&' + query.toString();  
 	}).catch(error => {
 		console.error(error);
 	});
@@ -71,10 +72,10 @@ function show() {
 </script>
 <body>
 <form>
-<label>Dataset <select id="selectorID" name="selector"><option></option></select></label><br>
-<label>Start date <input name="start_date" type="date" ></label> <label>time <input name="start_time" type="time" ></label><br>
-<label>End date <input name="end_date" type="date"></label> <label>time <input name="end_time" type="time" ></label><br>
-<label>Max points <input name="max_points" type="number" value="1000"></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
+<label>Dataset <select id="selector" name="selector"><option></option></select></label> <input type="url" id="permalink" name="permalink" value="[Current URL Here]" size="80" readonly> <br>
+<label>Start date <input id="start_date" name="start_date" type="date" ></label> <label>time <input id="start_time" name="start_time" type="time" ></label><br>
+<label>End date <input id="end_date" name="end_date" type="date"></label> <label>time <input id="end_time" name="end_time" type="time" ></label><br>
+<label>Max points <input id="max_points" name="max_points" type="number" value="1000"></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
 <label>Line plot? <input type="checkbox" id="Line" name="Line" value="Line"></label><br>
 <input type="button" value="Show" onClick="show();">
 <hr>
@@ -87,8 +88,13 @@ const config = {
 	options: {
 		scales: {
 			x: {
-				type: "time"
-			}
+				type: "time",
+				time: {
+                    displayFormats: {
+                        hour: 'h:mm a M/d/yyyy'
+						}
+					}
+				}
 		},
 		animation: {
 			duration: 0
@@ -121,42 +127,78 @@ var chart = new Chart(
 </script>
 
 <script>
-var select = document.getElementById("selectorID"); 
-let request = new Request('selectors?');
-fetch(request).then(response => {
-		if (response.status === 200) {
-			return response.json();
-		} else {
-			throw new Error("non 200 response: " + response.status);
-		}
-	}).then(response => {
-		var name_groups = {};
-		for (var i = 0; i < response.length; i++) {
-			var data_name = response[i][0];
-			var name_group= data_name.substring(0, data_name.indexOf('.'));
-			var name_element = data_name.substring(data_name.indexOf('.')+1);
-			if (name_group=='') {
-				name_group = 'Other';
+function getSelectors() {
+	var select = document.getElementById("selector"); 
+	let request = new Request('selectors?');
+	fetch(request).then(response => {
+			if (response.status === 200) {
+				return response.json();
+			} else {
+				throw new Error("non 200 response: " + response.status);
 			}
-			if (!(name_group in name_groups)) {
-				var el_group = document.createElement("OPTGROUP");
-				el_group.label = name_group;
-				name_groups[name_group] = el_group;
-			}
+		}).then(response => {
+			var name_groups = {};
+			for (var i = 0; i < response.length; i++) {
+				var data_name = response[i][0];
+				var name_group= data_name.substring(0, data_name.indexOf('.'));
+				var name_element = data_name.substring(data_name.indexOf('.')+1);
+				if (name_group=='') {
+					name_group = 'Other';
+				}
+				if (!(name_group in name_groups)) {
+					var el_group = document.createElement("OPTGROUP");
+					el_group.label = name_group;
+					name_groups[name_group] = el_group;
+				}
 
-		  
-			var el = document.createElement("option");
-			el.text = name_element;
-			el.value = data_name;
-			name_groups[name_group].appendChild(el)
-		 
-		}
-		
-		for (let key in name_groups) {
-			select.add(name_groups[key]);
-		}
-	}).catch(error => {
-		console.error(error);
-	});
+			  
+				var el = document.createElement("option");
+				el.text = name_element;
+				el.value = data_name;
+				name_groups[name_group].appendChild(el)
+			 
+			}
+			
+			for (let key in name_groups) {
+				select.add(name_groups[key]);
+			}
+		}).catch(error => {
+			console.error(error);
+		});
+}
 </script>
+<script>
+function changeSelector() {
+	document.getElementById("selector").value = "dash.cpu_temperature";
+}
+</script>
+<script>
+getSelectors();
+const url = new URL(window.location.href);
+if (url.searchParams.get('display')) {
+	for(pair of url.searchParams.entries()) {
+		element = document.getElementById(pair[0]);
+		if (typeof(element) != 'undefined' && element != null) {
+		  console.log(pair);
+		  document.getElementById(pair[0]).value = pair[1];
+		  console.log(document.getElementById("selector").value);
+		  document.getElementById("selector").value = "dash.cpu_temperature";
+		  changeSelector();
+		}
+	}
+	console.log(document.getElementById("selector"));
+	show();
+}
+
+document.getElementById('permalink').value = window.location.href; 
+</script>
+<script>
+(function() {
+   // your page initialization code here
+   // the DOM will be available here
+	changeSelector();
+	console.log('here');
+})();
+</script>
+
 </form>
