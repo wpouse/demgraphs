@@ -64,7 +64,6 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
                         query += ' OR'
             
             query += ' ORDER BY time DESC'
-            print(query)
             if 'start_date' in q:
                 self.server.cur.execute(query, {'t1': t1, 't0': t0})
             else:
