@@ -86,12 +86,10 @@ function show() {
 		} else {
 				var plotType = 'scatter';
 		}
-		if (chart.options.type != plotType) {
-			var temp = jQuery.extend(true, {}, config); // Chart type doesn't update dynamically, so must copy configuration and create new chart
-			temp.type = plotType; 
-			chart.destroy()
-			chart = new Chart(document.getElementById('chart'), temp);
-		}
+		var temp = jQuery.extend(true, {}, config); // Chart type doesn't update dynamically, so must copy configuration and create new chart
+		temp.type = plotType; 
+		chart.destroy()
+		chart = new Chart(document.getElementById('chart'), temp);
 		chart.resetZoom(mode='none');
 		chart.update('none');
 		document.getElementById('permalink').value = location.protocol+'//'+location.host+location.pathname + '?display=true&' + query.toString();  
