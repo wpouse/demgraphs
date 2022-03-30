@@ -32,10 +32,6 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
             #The LIMIT query just limits the query to the past LIMIT number of rows instead of equally spaced between the two time stamps
             #query = 'SELECT COUNT(*) FROM data WHERE'
             query = 'SELECT * FROM data WHERE'
-            selector = None
-            if 'selector' in q:
-                selector = q['selector'][0].strip()
-                query += ' name=:selector AND'
             
             if 'start_date' in q:
                 start_date = q['start_date'][0]
@@ -56,24 +52,42 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
             t1 = int(datetime.datetime.strptime(end_date + ' ' + end_time, "%Y-%m-%d %H:%M").timestamp())
             query += ' time <= :t1'
             
-            query += ' ORDER BY time DESC'
+            selector = None
+            if 'selector' in q:
+                selectors = q['selector'][0].split(",")
+                query += ' AND'
+                for n in range(len(selectors)):
+                    selector = selectors[n]
+                    print(selector)
+                    query += ' name=' + "'" + selector +"'"
+                    if n != len(selectors)-1:
+                        query += ' OR'
             
+            query += ' ORDER BY time DESC'
+            print(query)
             if 'start_date' in q:
-                self.server.cur.execute(query, {'t1': t1, 't0': t0, 'selector': selector})
+                self.server.cur.execute(query, {'t1': t1, 't0': t0})
             else:
-                self.server.cur.execute(query, {'t1': t1, 'selector': selector})
+                self.server.cur.execute(query, {'t1': t1})
             rows = self.server.cur.fetchall()
-            num_rows = len(rows)
-            skip_row_num = int(num_rows // limit) #Floor to nearest integer
-            if skip_row_num < 2:
-                skip_row_num = 1
-            rows = rows[::skip_row_num]
+            data_dict = {}
+            for (name, value, time) in rows:
+                if name in data_dict:
+                    data_dict[name].append((time,value))
+                else:
+                    data_dict[name] = [(time,value)]
+            
+            #num_rows = len(rows)
+            #skip_row_num = int(num_rows // limit) #Floor to nearest integer
+            #if skip_row_num < 2:
+            #    skip_row_num = 1
+            #rows = rows[::skip_row_num]
             self.send_response(200)
             self.send_header('Content-Type', 'text/json')
             self.end_headers()
             
                 
-            self.wfile.write(json.dumps(list(rows)).encode())
+            self.wfile.write(json.dumps(data_dict).encode())
             
         elif url_parsed.path == '/selectors':
             query = "SELECT DISTINCT name FROM data"

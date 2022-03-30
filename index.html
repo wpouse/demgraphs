@@ -9,6 +9,7 @@
 <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/google-palette@1.1.0/palette.min.js"></script>
 <script>
 const data = {
   datasets: [{
@@ -21,7 +22,9 @@ const data = {
 
 function show() {
 	let query = new URLSearchParams();
-	selector = document.getElementsByName("selector")[0].value;
+	//selector = document.getElementsByName("selector")[0].value;
+	const selected = document.querySelectorAll('#selector option:checked');
+	const selector = Array.from(selected).map(el => el.value);
 	if (selector.length > 0)
 		query.append('selector', selector);
 	max_points = document.getElementsByName("max_points")[0].value;
@@ -47,11 +50,22 @@ function show() {
 	}).then(response => {
 		let end = performance.now()
 		document.getElementById("response").innerText = "Loaded " + response.length + " results in " + (end - start)+ " ms";
-		data.datasets[0].data.length = 0;
-		for (var i = 0; i < response.length; i++) {
-			data.datasets[0].data.push({x: 1000*response[i][2], y: response[i][1]})
+		data.datasets = [{}];
+		var color_seq = palette('tol', selector.length).map(function(hex) {
+			return '#' + hex;
+		});
+		//data.datasets[0].data.length = 0;
+		for (var i = 0; i < selector.length; i++) {
+			data.datasets[i] = {};
+			data.datasets[i].data = [];
+			data.datasets[i].label = selector[i];
+			data.datasets[i].backgroundColor = color_seq[i];
+			data.datasets[i].borderColor = color_seq[i];
+			for (var j = 0; j < response[selector[i]].length; j++) {
+				data.datasets[i].data.push({x: 1000*response[selector[i]][j][0], y: response[selector[i]][j][1]});
+			}
 		}
-		data.datasets[0].label = selector;
+		
 		if (document.getElementById("Line").checked) {
 			var plotType = 'line';
 		} else {
@@ -63,6 +77,7 @@ function show() {
 			chart.destroy()
 			chart = new Chart(document.getElementById('chart'), temp);
 		}
+		chart.resetZoom(mode='none');
 		chart.update('none');
 		document.getElementById('permalink').value = location.protocol+'//'+location.host+location.pathname + '?display=true&' + query.toString();  
 	}).catch(error => {
@@ -72,15 +87,22 @@ function show() {
 </script>
 <body>
 <form>
-<label>Dataset <select id="selector" name="selector"><option></option></select></label> <input type="url" id="permalink" name="permalink" value="[Current URL Here]" size="80" readonly> <br>
+<label>Permanent Link <input type="url" id="permalink" name="permalink" value="[Current URL Here]" size="80" readonly></label> <br>
 <label>Start date <input id="start_date" name="start_date" type="date" ></label> <label>time <input id="start_time" name="start_time" type="time" ></label><br>
 <label>End date <input id="end_date" name="end_date" type="date"></label> <label>time <input id="end_time" name="end_time" type="time" ></label><br>
-<label>Max points <input id="max_points" name="max_points" type="number" value="1000"></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
+<label>Max points <input id="max_points" name="max_points" type="number" value="1000" disabled></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
 <label>Line plot? <input type="checkbox" id="Line" name="Line" value="Line"></label><br>
 <input type="button" value="Show" onClick="show();">
 <hr>
 <span id="response"></span>
-<canvas id="chart"></canvas>
+<div class="container" style="display: flex; height: 100px;">
+        <div style="width: 15%;">
+            <label>Dataset <select id="selector" name="selector" multiple><option></option></select></label>
+        </div>
+        <div style="flex-grow: 1;">
+           <canvas id="chart"></canvas>
+        </div>
+</div>
 <script>
 const config = {
 	type: 'scatter',
