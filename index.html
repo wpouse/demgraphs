@@ -204,7 +204,18 @@ function getSelectors() {
 				for(pair of url.searchParams.entries()) {
 					element = document.getElementById(pair[0]);
 					if (typeof(element) != 'undefined' && element != null) {
-					  document.getElementById(pair[0]).value = pair[1];
+						if (pair[0] === 'selector') {
+							datasetSelectors = pair[1].split(',');
+							for ( var i = 0, l = element.options.length, o; i < l; i++ ) {
+							  o = element.options[i];
+							  if ( datasetSelectors.indexOf( o.value ) != -1 )
+							  {
+								o.selected = true;
+							  }
+							}
+						} else {
+							document.getElementById(pair[0]).value = pair[1];
+						}
 					}
 				}
 				show();
