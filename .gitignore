@@ -1,2 +1,7 @@
 test
 dg.db
+TemplateTesting.ipynb
+.ipynb_checkpoints
+__pycache__/
+dg2.db
+templates/jinjaTest.html
