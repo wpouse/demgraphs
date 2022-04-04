@@ -85,7 +85,12 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
         
     def _setHTMLInputs(self, parsed_query):
         q = parsed_query
-        templatingVariables = {'url_value': self.path, 'start_date': '', 'start_time': '', 'end_date': '', 'end_time': '', 'showData': False}
+        templatingVariables = {
+            'url_value': self.path, 
+            'start_date': [(datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d %H:%M")], 
+            'end_date': [datetime.datetime.now().strftime("%Y-%m-%d %H:%M")], 
+            'showData': False
+        }
         selectors = []
         for queryHTML in q:
             if queryHTML in templatingVariables:
@@ -96,6 +101,7 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
         if selectors:
             templatingVariables['datasetDict'] = self._getData(q)
             templatingVariables['showData'] = True
+        print(templatingVariables['start_date'])
         return templatingVariables
     
     def _getData(self, parsed_query):
@@ -110,25 +116,31 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
         #query = 'SELECT COUNT(*) FROM data WHERE'
         query = 'SELECT * FROM data WHERE'
         
-        start_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d") #Set default start_date to yesterday
-        if 'start_date' in q:
-            start_date = q['start_date'][0]
-            
-        start_time = '00:00'
-        if 'start_time' in q:
-            start_time = q['start_time'][0]
-        t0 = int(datetime.datetime.strptime(start_date + ' ' + start_time, "%Y-%m-%d %H:%M").timestamp())
-        print(t0)
+        #start_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d") #Set default start_date to yesterday
+        #if 'start_date' in q:
+        start_date = q['start_date'][0]
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d %H:%M")
+        if start_date.year <= 1970:
+            ref_date = datetime.datetime.strptime("1971-01-01 00:00", "%Y-%m-%d %H:%M")
+            time_dif = ref_date - start_date
+            t0 = int(ref_date.timestamp()) - int(time_dif.total_seconds())
+        else:
+            t0 = int(start_date.timestamp())
+        #start_time = '00:00'
+        #if 'start_time' in q:
+        #    start_time = q['start_time'][0]
+        #t0 = int(datetime.datetime.strptime(start_date + ' ' + start_time, "%Y-%m-%d %H:%M").timestamp())
         query += ' time >= :t0 AND'
         
-        end_date = datetime.date.today().strftime("%Y-%m-%d")
-        if 'end_date' in q:
-            end_date = q['end_date'][0]
-            
-        end_time = datetime.datetime.now().strftime("%H:%M")
-        if 'end_time' in q:
-            end_time = q['end_time'][0]
-        t1 = int(datetime.datetime.strptime(end_date + ' ' + end_time, "%Y-%m-%d %H:%M").timestamp())
+        #end_date = datetime.date.today().strftime("%Y-%m-%d")
+        #if 'end_date' in q:
+        end_date = q['end_date'][0]
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d %H:%M")
+        #end_time = datetime.datetime.now().strftime("%H:%M")
+        #if 'end_time' in q:
+        #    end_time = q['end_time'][0]
+        #t1 = int(datetime.datetime.strptime(end_date + ' ' + end_time, "%Y-%m-%d %H:%M").timestamp())
+        t1 = int(end_date.timestamp())
         query += ' time <= :t1'
 
         selectors = q['selector'][0].split(",")
@@ -140,7 +152,6 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
                 query += ' OR '
         query += ')'
         query += ' ORDER BY time DESC'
-        print(query, t0, t1)
         self.server.cur.execute(query, {'t1': t1, 't0': t0})
         rows = self.server.cur.fetchall()
         #print(rows)

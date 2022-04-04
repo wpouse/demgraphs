@@ -10,6 +10,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@1.2.1/dist/chartjs-plugin-zoom.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/google-palette@1.1.0/palette.min.js"></script>
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <script>
 const data = {
 
@@ -72,15 +75,18 @@ function show() {
 	if (max_points > 0) {
 		query.append('max_points', max_points);
 	}
-	start_date = document.getElementsByName("start_date")[0].value;
-	end_date = document.getElementsByName("end_date")[0].value;
+	//start_date = document.getElementsByName("start_date")[0].value;
+	//end_date = document.getElementsByName("end_date")[0].value;
+	start_date = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD hh:mm');
+	end_date = 	$('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD hh:mm');
 	<!-- Currently no checking that start date is less than end date. Have to consider case where one of start date or end_date isn't selected -->
 	query.append('start_date', start_date);
 	query.append('end_date', end_date);
-	start_time = document.getElementsByName("start_time")[0].value;
-	end_time = document.getElementsByName("end_time")[0].value;
-	query.append('start_time', start_time);
-	query.append('end_time', end_time);
+
+	//start_time = document.getElementsByName("start_time")[0].value;
+	//end_time = document.getElementsByName("end_time")[0].value;
+	//query.append('start_time', start_time);
+	//query.append('end_time', end_time);
 	let request = new Request('data?' + query.toString());
 	let start = performance.now()
 	fetch(request).then(response => {
@@ -117,8 +123,9 @@ function show() {
 <body>
 <form>
 <label>Permanent Link <input type="url" id="permalink" name="permalink" value={{url_value}} size="80" readonly></label> <br>
-<label>Start date <input id="start_date" name="start_date" type="date" value={{start_date}}></label> <label>time <input id="start_time" name="start_time" type="time" value={{start_time}}></label><br>
-<label>End date <input id="end_date" name="end_date" type="date" value={{end_date}}></label> <label>time <input id="end_time" name="end_time" type="time" value={{end_time}}></label><br>
+<div id="daterange" style="background: #fff; cursor: pointer; padding: 1px 10px; border: 1px solid #ccc; width: fit-content">
+<span></span>
+</div>
 <label>Max points <input id="max_points" name="max_points" type="number" value="1000" disabled></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
 <label>Line plot? <input type="checkbox" id="Line" name="Line" {% if line_plot_check %} checked=true {% endif %}></label><br>
 <input type="button" value="Show" onClick="show();">
@@ -143,6 +150,43 @@ function show() {
            <canvas id="chart"></canvas>
         </div>
 </div>
+<script>
+$(function() {
+
+    var start = moment("{{start_date[0]}}"); //moment().subtract(1, 'days');
+    var end = moment("{{end_date[0]}}"); //moment();
+
+    function cb(start, end) {
+        $('#daterange span').html(start.format('MM/DD/YY hh:mm A') + ' - ' + end.format('M/DD/YY hh:mm A'));
+    }
+
+    $('#daterange').daterangepicker({
+        startDate: start,
+        endDate: end,
+        timePicker: true,
+        ranges: {
+           'Last 5 Minutes': [moment().subtract(5,'minutes'), moment()],
+           'Last 15 Minutes': [moment().subtract(15,'minutes'), moment()],
+           'Last 30 Minutes': [moment().subtract(15,'minutes'), moment()],
+           'Last Hour': [moment().subtract(1,'hours'), moment()],
+           'Last 6 Hours': [moment().subtract(6,'hours'), moment()],
+           'Last 12 Hours': [moment().subtract(12,'hours'), moment()],
+           'Last 24 Hours': [moment().subtract(1, 'days'), moment()],
+           'Last 3 Days': [moment().subtract(3,'days'), moment()],
+           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+           'Last 14 Days': [moment().subtract(14,'days'), moment()],
+           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+           'Last 6 Months': [moment().subtract(6, 'month'), moment()],
+           'Last Year': [moment().subtract(1, 'year'), moment()],
+		   'Last 3 Years': [moment().subtract(3, 'year'), moment()],
+           'All time': [moment(0), moment()]
+        }
+    }, cb);
+
+    cb(start, end);
+
+});
+</script>
 <script>
 const config = {
 	type: 'scatter',
