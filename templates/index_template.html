@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <head>
 <meta charset="utf-8">
 <title>demgraphs</title>
@@ -13,6 +14,39 @@
 <script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
+<style>
+.container{
+  display:inline-flex;
+  flex-wrap:wrap;
+}
+.flex-direction{
+  flex-direction:row;
+}
+.div1{
+  width:165px;
+  height:132px;
+}
+
+.div2{
+  width:314px;
+  height:132px;
+}
+
+@media screen and (max-width: 500px) {
+  .flex-direction{
+  flex-direction:column;
+  }
+.div1{
+  width:202px;
+  height:131px;
+  }
+  .div2{
+    width:202px;
+    height:107px;
+  }
+  
+}
+</style>
 <script>
 const data = {
 
@@ -123,16 +157,17 @@ function show() {
 <body>
 <form>
 <label>Permanent Link <input type="url" id="permalink" name="permalink" value={{url_value}} size="80" readonly></label> <br>
-<div id="daterange" style="background: #fff; cursor: pointer; padding: 1px 10px; border: 1px solid #ccc; width: fit-content">
+<div class="none" id="daterange" style="background: #fff; cursor: pointer; padding: 1px 10px; border: 1px solid #ccc; width: fit-content">
 <span></span>
 </div>
 <label>Max points <input id="max_points" name="max_points" type="number" value="1000" disabled></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
 <label>Line plot? <input type="checkbox" id="Line" name="Line" {% if line_plot_check %} checked=true {% endif %}></label><br>
+<label>Auto refresh?<input type="checkbox" id="autorefreshID" onclick='_autoRefresh();'></label><label>Refresh interval (s) (min 5s) <input id="refresh_interval" type="number" value="60" style="width: fit-content"></label><br>
 <input type="button" value="Show" onClick="show();">
 <hr>
 <span id="response"></span>
-<div class="container" style="display: flex; height: 100px;">
-        <div style="width: 15%;">
+<div class="container flex-direction" style="display: flex;">
+        <div class="div1">
             <label>Dataset <select id="selector" name="selector" multiple>
 			{% for groupName in groupNamesDict %}
 				<optgroup label = {{groupName}}>
@@ -146,9 +181,10 @@ function show() {
 			{% endfor %}
 			</select></label>
         </div>
-        <div style="flex-grow: 1;">
-           <canvas id="chart"></canvas>
-        </div>
+		<div class="chart-container" style="position: relative; height:40vh; width:80vw">
+			<canvas id="chart"></canvas>
+		</div>
+		
 </div>
 <script>
 $(function() {
@@ -231,74 +267,24 @@ var chart = new Chart(
   config
 );
 </script>
-
 <script>
-function getSelectors() {
-	var select = document.getElementById("selector"); 
-	let request = new Request('selectors?');
-	fetch(request).then(response => {
-			if (response.status === 200) {
-				return response.json();
-			} else {
-				throw new Error("non 200 response: " + response.status);
-			}
-		}).then(response => {
-			var name_groups = {};
-			for (var i = 0; i < response.length; i++) {
-				var data_name = response[i][0];
-				var name_group= data_name.substring(0, data_name.indexOf('.'));
-				var name_element = data_name.substring(data_name.indexOf('.')+1);
-				if (name_group=='') {
-					name_group = 'Other';
-				}
-				if (!(name_group in name_groups)) {
-					var el_group = document.createElement("OPTGROUP");
-					el_group.label = name_group;
-					name_groups[name_group] = el_group;
-				}
-
-			  
-				var el = document.createElement("option");
-				el.text = name_element;
-				el.value = data_name;
-				name_groups[name_group].appendChild(el)
-			 
-			}
-			
-			for (let key in name_groups) {
-				select.add(name_groups[key]);
-			}
-			const url = new URL(window.location.href);
-			if (url.searchParams.get('display')) {
-				for(pair of url.searchParams.entries()) {
-					element = document.getElementById(pair[0]);
-					if (typeof(element) != 'undefined' && element != null) {
-						if (pair[0] === 'selector') {
-							datasetSelectors = pair[1].split(',');
-							for ( var i = 0, l = element.options.length, o; i < l; i++ ) {
-							  o = element.options[i];
-							  if ( datasetSelectors.indexOf( o.value ) != -1 )
-							  {
-								o.selected = true;
-							  }
-							}
-						} else {
-							document.getElementById(pair[0]).value = pair[1];
-						}
-					}
-				}
-				show();
-			}
-		}).catch(error => {
-			console.error(error);
-		});
+var _interval = 0
+function _autoRefresh() {
+	if (document.getElementById("autorefreshID").checked) {
+		_refreshInterval = Math.max(5000, 1000*document.getElementById("refresh_interval").value)
+		_interval = setInterval(show, _refreshInterval);
+	} else if (_interval != 0 && !(document.getElementById("autorefreshID").checked)) {
+		clearInterval(_interval);
+	}
 }
+
 </script>
 <script>
 {% if showData %}
 	_setDataColors()
 {% endif %}
-document.getElementById('permalink').value = window.location.href; 
+document.getElementById('permalink').value = window.location.href;
+_autoRefresh();
 </script>
 
 </form>
