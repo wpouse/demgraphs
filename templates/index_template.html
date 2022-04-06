@@ -111,8 +111,8 @@ function show() {
 	}
 	//start_date = document.getElementsByName("start_date")[0].value;
 	//end_date = document.getElementsByName("end_date")[0].value;
-	start_date = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD hh:mm');
-	end_date = 	$('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD hh:mm');
+	start_date = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD HH:mm');
+	end_date = 	$('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD HH:mm');
 	<!-- Currently no checking that start date is less than end date. Have to consider case where one of start date or end_date isn't selected -->
 	query.append('start_date', start_date);
 	query.append('end_date', end_date);
