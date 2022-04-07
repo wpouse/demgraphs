@@ -11,7 +11,8 @@ if __name__ == '__main__':
     parser.add_argument('--port', '-p', type=int)
     args = parser.parse_args()
 
-    now = time.time()
+    #now = time.time()
     for _ in range(1000):
-        rtime = int(random.random() * now)
-        requests.post(f'http://localhost:{args.port}/', data=f'dash.random {random.random()} {rtime}\n')
+        #rtime = int(random.random() * now)
+        now = int(time.time())
+        requests.post(f'http://localhost:{args.port}/', data=f'dash.random {random.random()} {now}\n')

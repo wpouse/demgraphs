@@ -111,8 +111,8 @@ function show() {
 	}
 	//start_date = document.getElementsByName("start_date")[0].value;
 	//end_date = document.getElementsByName("end_date")[0].value;
-	start_date = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD HH:mm');
-	end_date = 	$('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD HH:mm');
+	start_date = $('#daterange').data('daterangepicker').startDate.format('YYYY-MM-DD HH:mm:ss');
+	end_date = 	$('#daterange').data('daterangepicker').endDate.format('YYYY-MM-DD HH:mm:ss');
 	<!-- Currently no checking that start date is less than end date. Have to consider case where one of start date or end_date isn't selected -->
 	query.append('start_date', start_date);
 	query.append('end_date', end_date);
@@ -187,35 +187,39 @@ function show() {
 		
 </div>
 <script>
+var _now = moment()
 $(function() {
 
     var start = moment("{{start_date[0]}}"); //moment().subtract(1, 'days');
     var end = moment("{{end_date[0]}}"); //moment();
-
+	if (end.format('M/DD/YY hh:mm A') === _now.format('M/DD/YY hh:mm A')) {
+		end = _now;
+	}
     function cb(start, end) {
         $('#daterange span').html(start.format('MM/DD/YY hh:mm A') + ' - ' + end.format('M/DD/YY hh:mm A'));
     }
 
     $('#daterange').daterangepicker({
+		autoUpdateInput: true,
         startDate: start,
         endDate: end,
         timePicker: true,
         ranges: {
-           'Last 5 Minutes': [moment().subtract(5,'minutes'), moment()],
-           'Last 15 Minutes': [moment().subtract(15,'minutes'), moment()],
-           'Last 30 Minutes': [moment().subtract(15,'minutes'), moment()],
-           'Last Hour': [moment().subtract(1,'hours'), moment()],
-           'Last 6 Hours': [moment().subtract(6,'hours'), moment()],
-           'Last 12 Hours': [moment().subtract(12,'hours'), moment()],
-           'Last 24 Hours': [moment().subtract(1, 'days'), moment()],
-           'Last 3 Days': [moment().subtract(3,'days'), moment()],
-           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-           'Last 14 Days': [moment().subtract(14,'days'), moment()],
-           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-           'Last 6 Months': [moment().subtract(6, 'month'), moment()],
-           'Last Year': [moment().subtract(1, 'year'), moment()],
-		   'Last 3 Years': [moment().subtract(3, 'year'), moment()],
-           'All time': [moment(0), moment()]
+           'Last 5 Minutes': [_now.clone().subtract(5,'minutes'), _now],
+           'Last 15 Minutes': [_now.clone().subtract(15,'minutes'),_now],
+           'Last 30 Minutes': [_now.clone().subtract(15,'minutes'), _now],
+           'Last Hour': [_now.clone().subtract(1,'hours'), _now],
+           'Last 6 Hours': [_now.clone().subtract(6,'hours'), _now],
+           'Last 12 Hours': [_now.clone().subtract(12,'hours'), _now],
+           'Last 24 Hours': [_now.clone().subtract(1, 'days'), _now],
+           'Last 3 Days': [_now.clone().subtract(3,'days'), _now],
+           'Last 7 Days': [_now.clone().subtract(6, 'days'), _now],
+           'Last 14 Days': [_now.clone().subtract(14,'days'), _now],
+           'Last 30 Days': [_now.clone().subtract(29, 'days'), _now],
+           'Last 6 Months': [_now.clone().subtract(6, 'month'), _now],
+           'Last Year': [_now.clone().subtract(1, 'year'), _now],
+		   'Last 3 Years': [_now.clone().subtract(3, 'year'), _now],
+           'All time': [moment(0), _now]
         }
     }, cb);
 
@@ -252,6 +256,7 @@ const config = {
 				enabled: true
 			  },
 			  mode: 'xy',
+			  overScaleMode: 'xy',
 			},
 			pan: {
 				enabled: true,
@@ -268,15 +273,44 @@ var chart = new Chart(
 );
 </script>
 <script>
+function _updateTime (){
+	_daterangepicker = $('#daterange').data('daterangepicker')
+	var _newNow = moment()
+	if (_daterangepicker.endDate.isSame(_now)) {
+		_daterangepicker.setEndDate(_newNow);
+		document.querySelector("#daterange > span").textContent = _daterangepicker.startDate.format('MM/DD/YY hh:mm A') + ' - ' + _daterangepicker.endDate.format('MM/DD/YY hh:mm A');
+	}
+	_daterangepicker.ranges = {
+           'Last 5 Minutes': [_newNow.clone().subtract(5,'minutes'), _newNow],
+           'Last 15 Minutes': [_newNow.clone().subtract(15,'minutes'), _newNow],
+           'Last 30 Minutes': [_newNow.clone().subtract(15,'minutes'), _newNow],
+           'Last Hour': [_newNow.clone().subtract(1,'hours'), _newNow],
+           'Last 6 Hours': [_newNow.clone().subtract(6,'hours'), _newNow],
+           'Last 12 Hours': [_newNow.clone().subtract(12,'hours'), _newNow],
+           'Last 24 Hours': [_newNow.clone().subtract(1, 'days'), _newNow],
+           'Last 3 Days': [_newNow.clone().subtract(3,'days'), _newNow],
+           'Last 7 Days': [_newNow.clone().subtract(6, 'days'), _newNow],
+           'Last 14 Days': [_newNow.clone().subtract(14,'days'), _newNow],
+           'Last 30 Days': [_newNow.clone().subtract(29, 'days'), _newNow],
+           'Last 6 Months': [_newNow.clone().subtract(6, 'month'), _newNow],
+           'Last Year': [_newNow.clone().subtract(1, 'year'), _newNow],
+		   'Last 3 Years': [_newNow.clone().subtract(3, 'year'), _newNow],
+           'All time': [moment(0), _newNow]
+        }
+	_now = _newNow
+	show()
+}
+
 var _interval = 0
 function _autoRefresh() {
 	if (document.getElementById("autorefreshID").checked) {
 		_refreshInterval = Math.max(5000, 1000*document.getElementById("refresh_interval").value)
-		_interval = setInterval(show, _refreshInterval);
+		_interval = setInterval(_updateTime, _refreshInterval);
 	} else if (_interval != 0 && !(document.getElementById("autorefreshID").checked)) {
 		clearInterval(_interval);
 	}
 }
+
 
 </script>
 <script>

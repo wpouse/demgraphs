@@ -87,8 +87,8 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
         q = parsed_query
         templatingVariables = {
             'url_value': self.path, 
-            'start_date': [(datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d %H:%M")], 
-            'end_date': [datetime.datetime.now().strftime("%Y-%m-%d %H:%M")], 
+            'start_date': [(datetime.datetime.now() - datetime.timedelta(days=1)).strftime("%Y-%m-%d %H:%M:%S")], 
+            'end_date': [datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")], 
             'showData': False
         }
         selectors = []
@@ -119,9 +119,9 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
         #start_date = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d") #Set default start_date to yesterday
         #if 'start_date' in q:
         start_date = q['start_date'][0]
-        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d %H:%M")
+        start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S")
         if start_date.year <= 1970:
-            ref_date = datetime.datetime.strptime("1971-01-01 00:00", "%Y-%m-%d %H:%M")
+            ref_date = datetime.datetime.strptime("1971-01-01 00:00:00", "%Y-%m-%d %H:%M:%S")
             time_dif = ref_date - start_date
             t0 = int(ref_date.timestamp()) - int(time_dif.total_seconds())
         else:
@@ -135,7 +135,7 @@ class ServerHandler(http.server.BaseHTTPRequestHandler):
         #end_date = datetime.date.today().strftime("%Y-%m-%d")
         #if 'end_date' in q:
         end_date = q['end_date'][0]
-        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d %H:%M")
+        end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S")
         #end_time = datetime.datetime.now().strftime("%H:%M")
         #if 'end_time' in q:
         #    end_time = q['end_time'][0]
