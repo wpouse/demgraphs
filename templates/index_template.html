@@ -15,6 +15,13 @@
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <style>
+.url-input{
+	min-width:10px;
+	max-width: 900px;
+	display: inline-block;
+}
+
+
 .container{
   display:inline-flex;
   flex-wrap:wrap;
@@ -28,21 +35,27 @@
 }
 
 .div2{
+  position: relative;
   width:80vw;
   height:60vh;
 }
+
+
 
 @media screen and (max-width: 500px) {
   .flex-direction{
   flex-direction:column;
   }
 .div1{
-  width:202px;
-  height:131px;
+  width:500px;
+  height:130px;
   }
   .div2{
-    width:40vw;
-    height:80vh;
+	height: 500px;
+	width: 90%;
+  }
+  .url-input{
+	width: 100%;
   }
   
 }
@@ -156,17 +169,18 @@ function show() {
 </script>
 <body>
 <form>
-<label>Permanent Link <input type="url" id="permalink" name="permalink" value={{url_value}} size="80" readonly></label> <br>
+<label>Permanent Link</label><div class="url-input"><input type="url" id="permalink" name="permalink" value={{url_value}} readonly>
+</div> <br>
 <div class="none" id="daterange" style="background: #fff; cursor: pointer; padding: 1px 10px; border: 1px solid #ccc; width: fit-content">
 <span></span>
 </div>
 <label>Max points <input id="max_points" name="max_points" type="number" value="1000" disabled></label> <label>Skip every <input name="skip_every" type="number" value="1" disabled></label><br>
 <label>Line plot? <input type="checkbox" id="Line" name="Line" {% if line_plot_check %} checked=true {% endif %}></label><br>
-<label>Auto refresh?<input type="checkbox" id="autorefreshID" onclick='_autoRefresh();'></label><label>Refresh interval (s) (min 5s) <input id="refresh_interval" type="number" value="60" style="width: fit-content"></label><br>
+<label>Auto refresh?<input type="checkbox" id="autorefreshID" onclick='_autoRefresh();'></label><label>Refresh interval (s) (min 5s) <input id="refresh_interval" type="number" value="60" style="width: 50px"></label><br>
 <input type="button" value="Show" onClick="show();">
 <hr>
 <span id="response"></span>
-<div class="container flex-direction" style="display: flex;">
+<div class="container flex-direction">
         <div class="div1">
             <label>Dataset <select id="selector" name="selector" multiple>
 			{% for groupName in groupNamesDict %}
