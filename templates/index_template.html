@@ -15,10 +15,19 @@
 <script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
 <style>
-.url-input{
-	min-width:10px;
-	max-width: 900px;
+.url-display{
+	border:1px;
+	border-style:solid;
+	border-color:#000000;
+	padding: .1em;
+	margin-left: 5px;
+	max-width: 70vw;
 	display: inline-block;
+    overflow: hidden;
+    white-space: nowrap;
+	-moz-user-select: all;
+    -webkit-user-select: all;
+    -ms-user-select: all;
 }
 
 
@@ -160,7 +169,7 @@ function show() {
 			}
 		}
 		document.getElementById("response").innerText = "Loaded " + data_length + " results in " + (end - start)+ " ms";
-		document.getElementById('permalink').value = location.protocol+'//'+location.host+location.pathname + '?display=true&' + query.toString();
+		document.getElementById('permalink').textContent = location.protocol+'//'+location.host+location.pathname + '?display=true&' + query.toString();
 		_setDataColors()
 	}).catch(error => {
 		console.error(error);
@@ -168,9 +177,8 @@ function show() {
 }
 </script>
 <body>
+<label style="display: inline-block; overflow:hidden">Permanent Link</label><span class="url-display" id="permalink">{{url_value}}</span>
 <form>
-<label>Permanent Link</label><div class="url-input"><input type="url" id="permalink" name="permalink" value={{url_value}} readonly>
-</div> <br>
 <div class="none" id="daterange" style="background: #fff; cursor: pointer; padding: 1px 10px; border: 1px solid #ccc; width: fit-content">
 <span></span>
 </div>
@@ -341,7 +349,7 @@ function _autoRefresh() {
 {% if showData %}
 	_setDataColors()
 {% endif %}
-document.getElementById('permalink').value = window.location.href;
+document.getElementById('permalink').textContent = window.location.href;
 _autoRefresh();
 </script>
 
